@@ -1,0 +1,29 @@
+---
+- name: 'Verify'
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: 'Check if PostgreSQL process is running'
+      ansible.builtin.command:
+        cmd: 'pgrep -u postgres'
+      register: __postgresql_is_running
+      failed_when: __postgresql_is_running.rc != 0
+      changed_when: false
+
+    - name: 'Check if PostgreSQL is listening on the default port'
+      ansible.builtin.wait_for:
+        port: 5432
+        timeout: 5
+      register: __postgresql_is_listening
+      failed_when: not __postgresql_is_listening
+
+    - name: 'Try to connect to PostgreSQL'
+      become: true
+      become_user: 'postgres'
+      community.postgresql.postgresql_ping:
+        login_unix_socket: '/var/run/postgresql'
+        login_user: 'postgres'
+        login_db: 'template1'
+      register: __postgresql_connection
+      failed_when: not __postgresql_connection.is_available

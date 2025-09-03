@@ -1,0 +1,18 @@
+---
+- name: 'Ensure PostgreSQL databases are present'
+  become: true
+  become_user: '{{ __postgresql_admin_user }}'
+  community.postgresql.postgresql_db:
+    name: '{{ postgresql_database.name }}'
+    owner: '{{ postgresql_database.owner | default(__postgresql_admin_user) }}'
+    encoding: '{{ postgresql_database.encoding | default(omit) }}'
+    lc_collate: '{{ postgresql_database.lc_collate | default(omit) }}'
+    lc_ctype: '{{ postgresql_database.lc_ctype | default(omit) }}'
+    template: "{{ postgresql_database.template | default('template0') }}"
+    login_user: '{{ postgresql_database.login_user | default(__postgresql_admin_user) }}'
+    login_password: '{{ postgresql_database.login_password | default(omit) }}'
+    login_port: '{{ postgresql_port }}'
+    state: "{{ postgresql_database.state | default('present') }}"
+  loop: '{{ postgresql_databases }}'
+  loop_control:
+    loop_var: postgresql_database

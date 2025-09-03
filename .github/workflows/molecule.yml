@@ -1,0 +1,56 @@
+---
+name: 'Molecule'
+on:
+  pull_request:
+  push:
+    branches: ['main']
+
+jobs:
+  lint:
+    name: 'Lint'
+    runs-on: 'ubuntu-22.04'
+    steps:
+      - name: 'Checkout the codebase'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Set up Python 3'
+        uses: 'actions/setup-python@v5'
+        with:
+          python-version: '3.12'
+
+      - name: 'Run linters'
+        run: |
+          pip3 install --no-cache-dir tox
+          tox -e lint-2.16
+
+  molecule:
+    name: 'Molecule'
+    needs: 'lint'
+    runs-on: 'ubuntu-22.04'
+    strategy:
+      matrix:
+        include:
+          - distro: 'almalinux-8'
+          - distro: 'almalinux-9'
+          - distro: 'debian-11'
+          - distro: 'debian-12'
+          - distro: 'rockylinux-8'
+          - distro: 'rockylinux-9'
+          - distro: 'ubuntu-22.04'
+          - distro: 'ubuntu-24.04'
+
+    steps:
+      - name: 'Checkout the codebase'
+        uses: 'actions/checkout@v4'
+
+      - name: 'Set up Python 3'
+        uses: 'actions/setup-python@v5'
+        with:
+          python-version: '3.12'
+
+      - name: 'Testing an Ansible role with Molecule'
+        run: |
+          pip3 install --no-cache-dir tox
+          tox
+        env:
+          TAG: ${{ matrix.distro }}

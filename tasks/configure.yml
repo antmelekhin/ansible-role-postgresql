@@ -1,0 +1,44 @@
+---
+- name: 'Configure PostgreSQL'
+  become: true
+  block:
+    - name: 'RedHat | Initialize PostgreSQL database'
+      ansible.builtin.command:
+        cmd: '/usr/pgsql-{{ postgresql_version }}/bin/postgresql-{{ postgresql_version }}-setup initdb'
+        creates: '{{ __postgresql_config_path }}/PG_VERSION'
+      when: ansible_os_family == 'RedHat'
+
+    - name: 'Configure PostgreSQL'
+      ansible.builtin.template:
+        src: 'postgresql.conf.j2'
+        dest: '{{ __postgresql_config_path }}/postgresql.conf'
+        owner: 'postgres'
+        group: 'postgres'
+        mode: 0640
+      notify: 'Restart PostgreSQL'
+
+    - name: 'Configure PostgreSQL host based authentication'
+      ansible.builtin.template:
+        src: 'pg_hba.conf.j2'
+        dest: '{{ __postgresql_config_path }}/pg_hba.conf'
+        owner: 'postgres'
+        group: 'postgres'
+        mode: 0640
+      no_log: true
+      notify: 'Restart PostgreSQL'
+
+    - name: 'Configure PostgreSQL username maps'
+      ansible.builtin.template:
+        src: 'pg_ident.conf.j2'
+        dest: '{{ __postgresql_config_path }}/pg_ident.conf'
+        owner: 'postgres'
+        group: 'postgres'
+        mode: 0640
+      notify: 'Restart PostgreSQL'
+
+    - name: 'Ensure PostgreSQL is running and enabled at boot'
+      ansible.builtin.systemd:
+        name: '{{ __postgresql_service_name }}'
+        state: 'started'
+        enabled: true
+      when: not ansible_check_mode

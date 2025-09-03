@@ -1,0 +1,18 @@
+---
+- name: 'Install PostgreSQL'
+  ansible.builtin.include_tasks: 'install-{{ ansible_os_family }}.yml'
+
+- name: 'Configure PostgreSQL'
+  ansible.builtin.import_tasks: 'configure.yml'
+
+- name: 'Manage PostgreSQL users'
+  ansible.builtin.import_tasks: 'manage/users.yml'
+  when: postgresql_users | length
+
+- name: 'Manage PostgreSQL databases'
+  ansible.builtin.import_tasks: 'manage/databases.yml'
+  when: postgresql_databases | length
+
+- name: 'Manage PostgreSQL users privileges'
+  ansible.builtin.import_tasks: 'manage/users-privileges.yml'
+  when: postgresql_users | length

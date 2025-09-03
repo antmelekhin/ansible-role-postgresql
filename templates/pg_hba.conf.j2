@@ -1,0 +1,15 @@
+{{ ansible_managed | comment }}
+
+# PostgreSQL Client Authentication Configuration File
+# ===================================================
+#
+# See: https://www.postgresql.org/docs/current/auth-pg-hba-conf.html
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+{% for hba in postgresql_pg_hba %}
+{% if hba['comment'] is defined %}
+# {{ hba['comment'] }}
+{% endif %}
+{{ hba['type'] }}  {{ hba['database'] }}  {{ hba['user'] }}  {{ hba['address'] }}  {{ hba['method'] }}
+{% endfor %}

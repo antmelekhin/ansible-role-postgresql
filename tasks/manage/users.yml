@@ -1,0 +1,16 @@
+---
+- name: 'Ensure PostgreSQL users are present'
+  become: true
+  become_user: '{{ __postgresql_admin_user }}'
+  community.postgresql.postgresql_user:
+    name: '{{ postgresql_user.name }}'
+    password: '{{ postgresql_user.pass | default(omit) }}'
+    encrypted: '{{ postgresql_user.encrypted | default(omit) }}'
+    login_user: '{{ postgresql_user.login_user | default(__postgresql_admin_user) }}'
+    login_password: '{{ postgresql_user.login_password | default(omit) }}'
+    login_port: '{{ postgresql_port }}'
+    state: "{{ postgresql_user.state | default('present') }}"
+  loop: '{{ postgresql_users }}'
+  loop_control:
+    loop_var: postgresql_user
+  no_log: true

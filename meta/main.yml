@@ -1,0 +1,30 @@
+galaxy_info:
+  author: 'antmelekhin'
+  role_name: 'postgresql'
+  description: 'An Ansible role to install and configure PostgreSQL server.'
+
+  license: 'MIT'
+
+  min_ansible_version: '2.12'
+
+  platforms:
+    - name: 'Debian'
+      versions:
+        - 'bullseye'
+        - 'bookworm'
+    - name: 'EL'
+      versions:
+        - '8'
+        - '9'
+    - name: 'Ubuntu'
+      versions:
+        - 'jammy'
+        - 'noble'
+
+  galaxy_tags:
+    - 'database'
+    - 'postgresql'
+    - 'postgres'
+    - 'sql'
+
+dependencies: []

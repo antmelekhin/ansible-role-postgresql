@@ -1,0 +1,38 @@
+---
+- name: 'RedHat | Configure the repository and install the PostgreSQL packages'
+  become: true
+  block:
+    - name: 'RedHat | Ensure the dependencies are installed'
+      ansible.builtin.package:
+        name:
+          - 'ca-certificates'
+          - 'yum-utils'
+        state: 'present'
+
+    - name: 'RedHat | Disable the PostgreSQL DNF module (necessary for RHEL 8+)'
+      ansible.builtin.command:
+        cmd: 'dnf module disable postgresql -y'
+      register: __postgresql_disable_module
+      changed_when:
+        - '__postgresql_disable_module.rc == 0'
+        - "'Disabling modules:\\n postgresql' in __postgresql_disable_module.stdout"
+      when: ansible_distribution_major_version | int >= 8
+
+    - name: 'RedHat | Add the PostgreSQL repository'
+      ansible.builtin.template:
+        src: 'pgdg.repo.j2'
+        dest: '/etc/yum.repos.d/pgdg.repo'
+        owner: 'root'
+        group: 'root'
+        mode: 0644
+
+    - name: 'RedHat | Install the PostgreSQL packages'
+      ansible.builtin.yum:
+        name:
+          - 'postgresql{{ postgresql_version }}'
+          - 'postgresql{{ postgresql_version }}-contrib'
+          - 'postgresql{{ postgresql_version }}-server'
+          - 'python3-psycopg2'
+        update_cache: true
+        state: 'present'
+      ignore_errors: '{{ ansible_check_mode }}'

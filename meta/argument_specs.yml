@@ -1,0 +1,61 @@
+---
+argument_specs:
+  main:
+    short_description: 'PostgreSQL'
+    description: 'An Ansible role to install and configure PostgreSQL server.'
+    author: 'Melekhin Anton'
+    options:
+      postgresql_version:
+        type: 'str'
+        description: 'The version of PostgreSQL to install.'
+        default: '17'
+      postgresql_repository_mirror_url:
+        type: 'str'
+        description:
+          - 'The PostgreSQL repository mirror.'
+          - 'By default, the role uses the official PostgreSQL repository mirror.'
+        default: 'https://download.postgresql.org/pub/repos'
+      postgresql_repository_gpgkey_url:
+        type: 'str'
+        description:
+          - 'Specify where to fetch the PostgreSQL GPG key file from.'
+          - 'By default, the role uses the official PostgreSQL GPG key.'
+        default: '{{ __postgresql_repository_gpgkey_url }}'
+      postgresql_repository:
+        type: 'str'
+        description: 'Specify the PostgreSQL repository.'
+        default: '{{ __postgresql_repository }}'
+      postgresql_users:
+        type: 'list'
+        elements: 'dict'
+        description: 'List of users to be created (optional)'
+        default: []
+      postgresql_databases:
+        type: 'list'
+        elements: 'dict'
+        description: 'List of databases to be created (optional)'
+        default: []
+      postgresql_listen_addresses:
+        type: 'list'
+        description: "The IP address to listen on. Use '*' for all."
+        default: 'localhost'
+      postgresql_port:
+        type: 'int'
+        description: 'The port number that PostgreSQL listens on.'
+        default: 5432
+      postgresql_max_connections:
+        type: 'int'
+        description: 'Sets the maximum number of client connections that this server will accept.'
+        default: 100
+      postgresql_default_auth_method:
+        type: 'str'
+        description: 'Default authentication method to be used.'
+        default: "{{ 'scram-sha-256' if postgresql_version is version_compare('14', '>=') else 'md5' }}"
+      postgresql_pg_hba:
+        type: 'list'
+        elements: 'dict'
+        description: 'Configure HBA (Host Based Authentication) to allow remote connections.'
+      postgresql_pg_ident:
+        type: 'list'
+        elements: 'dict'
+        description: 'Configure User Name Maps to allow remote connections.'
