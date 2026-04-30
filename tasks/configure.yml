@@ -6,7 +6,7 @@
       ansible.builtin.command:
         cmd: '/usr/pgsql-{{ postgresql_version }}/bin/postgresql-{{ postgresql_version }}-setup initdb'
         creates: '{{ __postgresql_config_path }}/PG_VERSION'
-      when: ansible_os_family == 'RedHat'
+      when: ansible_facts['os_family'] == 'RedHat'
 
     - name: 'Configure PostgreSQL'
       ansible.builtin.template:

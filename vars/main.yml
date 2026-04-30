@@ -3,14 +3,14 @@ __postgresql_repository_gpgkey_url_dict:
   Debian: '{{ postgresql_repository_mirror_url }}/apt/ACCC4CF8.asc'
   RedHat: '{{ postgresql_repository_mirror_url }}/yum/keys/PGDG-RPM-GPG-KEY-RHEL'
 
-__postgresql_repository_gpgkey_url: '{{ __postgresql_repository_gpgkey_url_dict[ansible_os_family] }}'
+__postgresql_repository_gpgkey_url: "{{ __postgresql_repository_gpgkey_url_dict[ansible_facts['os_family']] }}"
 __postgresql_repository_gpgkey_keyring: '/usr/share/keyrings/postgresql-archive-keyring.gpg'
 
 __postgresql_repository_dict:
-  Debian: 'deb [signed-by={{ __postgresql_repository_gpgkey_keyring }}] {{ postgresql_repository_mirror_url }}/apt {{ ansible_distribution_release }}-pgdg main'
-  RedHat: "{{ postgresql_repository_mirror_url }}/yum/{{ postgresql_version }}/{{ (ansible_distribution == 'Fedora') | ternary('fedora/fedora', 'redhat/rhel') }}-$releasever-$basearch"
+  Debian: "deb [signed-by={{ __postgresql_repository_gpgkey_keyring }}] {{ postgresql_repository_mirror_url }}/apt {{ ansible_facts['distribution_release'] }}-pgdg main"
+  RedHat: "{{ postgresql_repository_mirror_url }}/yum/{{ postgresql_version }}/{{ (ansible_facts['distribution'] == 'Fedora') | ternary('fedora/fedora', 'redhat/rhel') }}-$releasever-$basearch"
 
-__postgresql_repository: '{{ __postgresql_repository_dict[ansible_os_family] }}'
+__postgresql_repository: "{{ __postgresql_repository_dict[ansible_facts['os_family']] }}"
 
 __postgresql_admin_user: 'postgres'
 
@@ -18,28 +18,24 @@ __postgresql_cluster_name_dict:
   Debian: '{{ postgresql_version }}/main'
   RedHat: '{{ postgresql_version }}/data'
 
-__postgresql_cluster_name: '{{ __postgresql_cluster_name_dict[ansible_os_family] }}'
+__postgresql_cluster_name: "{{ __postgresql_cluster_name_dict[ansible_facts['os_family']] }}"
 
 __postgresql_data_directory_dict:
   Debian: '/var/lib/postgresql/{{ __postgresql_cluster_name }}'
   RedHat: '/var/lib/pgsql/{{ __postgresql_cluster_name }}'
 
-__postgresql_data_directory: '{{ __postgresql_data_directory_dict[ansible_os_family] }}'
+__postgresql_data_directory: "{{ __postgresql_data_directory_dict[ansible_facts['os_family']] }}"
 
 __postgresql_config_path_dict:
   Debian: '/etc/postgresql/{{ __postgresql_cluster_name }}'
   RedHat: '/var/lib/pgsql/{{ __postgresql_cluster_name }}'
 
-__postgresql_config_path: '{{ __postgresql_config_path_dict[ansible_os_family] }}'
+__postgresql_config_path: "{{ __postgresql_config_path_dict[ansible_facts['os_family']] }}"
 
-__postgresql_external_pid_file_dict:
-  Debian: "/var/run/postgresql/{{ __postgresql_cluster_name | replace('/', '-') }}.pid"
-  RedHat: "/var/run/postgresql/{{ __postgresql_cluster_name | replace('/', '-') }}.pid"
-
-__postgresql_external_pid_file: '{{ __postgresql_external_pid_file_dict[ansible_os_family] }}'
+__postgresql_external_pid_file: "/var/run/postgresql/{{ __postgresql_cluster_name | replace('/', '-') }}.pid"
 
 __postgresql_service_name_dict:
   Debian: 'postgresql'
   RedHat: 'postgresql-{{ postgresql_version }}'
 
-__postgresql_service_name: '{{ __postgresql_service_name_dict[ansible_os_family] }}'
+__postgresql_service_name: "{{ __postgresql_service_name_dict[ansible_facts['os_family']] }}"
