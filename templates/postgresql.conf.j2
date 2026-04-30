@@ -57,62 +57,55 @@ external_pid_file = '{{ __postgresql_external_pid_file }}'
 listen_addresses = '{{ postgresql_listen_addresses | join(', ') }}'
 port = {{ postgresql_port }}
 max_connections = {{ postgresql_max_connections }}
-#reserved_connections = 0                           # (change requires restart)
-#superuser_reserved_connections = 3                 # (change requires restart)
-unix_socket_directories = '/var/run/postgresql'     # comma-separated list of directories
-                                                    # (change requires restart)
-#unix_socket_group = ''                             # (change requires restart)
-#unix_socket_permissions = 0777                     # begin with 0 to use octal notation
-                                                    # (change requires restart)
-#bonjour = off                                      # advertise server via Bonjour
-                                                    # (change requires restart)
-#bonjour_name = ''                                  # defaults to the computer name
-                                                    # (change requires restart)
+reserved_connections = {{ postgresql_reserved_connections }}
+superuser_reserved_connections = {{ postgresql_superuser_reserved_connections }}
+unix_socket_directories = '{{ postgresql_unix_socket_directories | join(', ') }}'
+unix_socket_group = '{{ postgresql_unix_socket_group }}'
+unix_socket_permissions = {{ postgresql_unix_socket_permissions }}
+{% if postgresql_bonjour %}
+bonjour = on
+bonjour_name = '{{ postgresql_bonjour_name | default(ansible_hostname) }}'
+{% endif %}
 
 # - TCP settings -
 # see "man tcp" for details
 
-#tcp_keepalives_idle = 0		# TCP_KEEPIDLE, in seconds;
-					# 0 selects the system default
-#tcp_keepalives_interval = 0		# TCP_KEEPINTVL, in seconds;
-					# 0 selects the system default
-#tcp_keepalives_count = 0		# TCP_KEEPCNT;
-					# 0 selects the system default
-#tcp_user_timeout = 0			# TCP_USER_TIMEOUT, in milliseconds;
-					# 0 selects the system default
-
-#client_connection_check_interval = 0	# time between checks for client
-					# disconnection while running queries;
-					# 0 for never
+tcp_keepalives_idle = {{ postgresql_tcp_keepalives_idle }}
+tcp_keepalives_interval = {{ postgresql_tcp_keepalives_interval }}
+tcp_keepalives_count = {{ postgresql_tcp_keepalives_count }}
+tcp_user_timeout = {{ postgresql_tcp_user_timeout }}
+client_connection_check_interval = {{ postgresql_client_connection_check_interval }}
 
 # - Authentication -
 
-#authentication_timeout = 1min		# 1s-600s
-#password_encryption = scram-sha-256	# scram-sha-256 or md5
-#scram_iterations = 4096
+authentication_timeout = '{{ postgresql_authentication_timeout }}'
+password_encryption = '{{ postgresql_password_encryption }}'
+scram_iterations = '{{ postgresql_scram_iterations }}'
 
-# GSSAPI using Kerberos
-#krb_server_keyfile = 'FILE:${sysconfdir}/krb5.keytab'
-#krb_caseins_users = off
-#gss_accept_delegation = off
+# - GSSAPI using Kerberos -
+
+krb_server_keyfile = '{{ postgresql_krb_server_keyfile }}'
+krb_caseins_users = {{ 'on' if (postgresql_krb_caseins_users | bool) else 'off' }}
+gss_accept_delegation = {{ 'on' if (postgresql_gss_accept_delegation | bool) else 'off' }}
 
 # - SSL -
 
-#ssl = on
-#ssl_ca_file = ''
-#ssl_cert_file = '/etc/ssl/certs/ssl-cert-snakeoil.pem'
-#ssl_crl_file = ''
-#ssl_crl_dir = ''
-#ssl_key_file = '/etc/ssl/private/ssl-cert-snakeoil.key'
-#ssl_ciphers = 'HIGH:MEDIUM:+3DES:!aNULL'	# allowed SSL ciphers
-#ssl_prefer_server_ciphers = on
-#ssl_ecdh_curve = 'prime256v1'
-#ssl_min_protocol_version = 'TLSv1.2'
-#ssl_max_protocol_version = ''
-#ssl_dh_params_file = ''
-#ssl_passphrase_command = ''
-#ssl_passphrase_command_supports_reload = off
-
+{% if postgresql_ssl %}
+ssl = on
+ssl_ca_file = '{{ postgresql_ssl_ca_file }}'
+ssl_cert_file = '{{ postgresql_ssl_cert_file }}'
+ssl_crl_file = '{{ postgresql_ssl_crl_file }}'
+ssl_crl_dir = '{{ postgresql_ssl_crl_dir }}'
+ssl_key_file = '{{ postgresql_ssl_key_file }}'
+ssl_ciphers = '{{ postgresql_ssl_ciphers }}'
+ssl_prefer_server_ciphers = {{ 'on' if (postgresql_ssl_prefer_server_ciphers | bool) else 'off' }}
+ssl_ecdh_curve = '{{ postgresql_ssl_ecdh_curve }}'
+ssl_min_protocol_version = '{{ postgresql_ssl_min_protocol_version }}'
+ssl_max_protocol_version = '{{ postgresql_ssl_max_protocol_version }}'
+ssl_dh_params_file = '{{ postgresql_ssl_dh_params_file }}'
+ssl_passphrase_command = '{{ postgresql_ssl_passphrase_command }}'
+ssl_passphrase_command_supports_reload = {{ 'on' if (postgresql_ssl_passphrase_command_supports_reload | bool) else 'off' }}
+{% endif %}
 
 #------------------------------------------------------------------------------
 # RESOURCE USAGE (except WAL)
@@ -120,49 +113,31 @@ unix_socket_directories = '/var/run/postgresql'     # comma-separated list of di
 
 # - Memory -
 
-shared_buffers = 128MB			# min 128kB
-					# (change requires restart)
-#huge_pages = try			# on, off, or try
-					# (change requires restart)
-#huge_page_size = 0			# zero for system default
-					# (change requires restart)
-#temp_buffers = 8MB			# min 800kB
-#max_prepared_transactions = 0		# zero disables the feature
-					# (change requires restart)
+shared_buffers = '{{ postgresql_shared_buffers }}'
+huge_pages = '{{ postgresql_huge_pages }}'
+huge_page_size = {{ postgresql_huge_page_size }}
+temp_buffers = '{{ postgresql_temp_buffers }}'
+max_prepared_transactions = {{ postgresql_max_prepared_transactions }}
 # Caution: it is not advisable to set max_prepared_transactions nonzero unless
 # you actively intend to use prepared transactions.
-#work_mem = 4MB				# min 64kB
-#hash_mem_multiplier = 2.0		# 1-1000.0 multiplier on hash table work_mem
-#maintenance_work_mem = 64MB		# min 64kB
-#autovacuum_work_mem = -1		# min 64kB, or -1 to use maintenance_work_mem
-#logical_decoding_work_mem = 64MB	# min 64kB
-#max_stack_depth = 2MB			# min 100kB
-#shared_memory_type = mmap		# the default is the first option
-					# supported by the operating system:
-					#   mmap
-					#   sysv
-					#   windows
-					# (change requires restart)
-dynamic_shared_memory_type = posix	# the default is usually the first option
-					# supported by the operating system:
-					#   posix
-					#   sysv
-					#   windows
-					#   mmap
-					# (change requires restart)
-#min_dynamic_shared_memory = 0MB	# (change requires restart)
-#vacuum_buffer_usage_limit = 2MB	# size of vacuum and analyze buffer access strategy ring;
-					# 0 to disable vacuum buffer access strategy;
-					# range 128kB to 16GB
-
-# SLRU buffers (change requires restart)
-#commit_timestamp_buffers = 0		# memory for pg_commit_ts (0 = auto)
-#multixact_offset_buffers = 16		# memory for pg_multixact/offsets
-#multixact_member_buffers = 32		# memory for pg_multixact/members
-#notify_buffers = 16			# memory for pg_notify
-#serializable_buffers = 32		# memory for pg_serial
-#subtransaction_buffers = 0		# memory for pg_subtrans (0 = auto)
-#transaction_buffers = 0		# memory for pg_xact (0 = auto)
+work_mem = '{{ postgresql_work_mem }}'
+hash_mem_multiplier = {{ postgresql_hash_mem_multiplier }}
+maintenance_work_mem = {{ postgresql_maintenance_work_mem }}
+autovacuum_work_mem = {{ postgresql_autovacuum_work_mem }}
+logical_decoding_work_mem = {{ postgresql_logical_decoding_work_mem }}
+max_stack_depth = {{ postgresql_max_stack_depth }}
+shared_memory_type = {{ postgresql_shared_memory_type }}
+dynamic_shared_memory_type = {{ postgresql_dynamic_shared_memory_type }}
+min_dynamic_shared_memory = {{ postgresql_min_dynamic_shared_memory }}
+vacuum_buffer_usage_limit = {{ postgresql_vacuum_buffer_usage_limit }}
+# SLRU buffers
+commit_timestamp_buffers = {{ postgresql_commit_timestamp_buffers }}
+multixact_offset_buffers = {{ postgresql_multixact_offset_buffers }}
+multixact_member_buffers = {{ postgresql_multixact_member_buffers }}
+notify_buffers = {{ postgresql_notify_buffers }}
+serializable_buffers = {{ postgresql_serializable_buffers }}
+subtransaction_buffers = {{ postgresql_subtransaction_buffers }}
+transaction_buffers = {{ postgresql_transaction_buffers }}
 
 # - Disk -
 
